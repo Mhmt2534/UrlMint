@@ -1,0 +1,6 @@
+@UrlMint_HostAddress = http://localhost:5064
+
+GET {{UrlMint_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

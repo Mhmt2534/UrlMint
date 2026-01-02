@@ -1,0 +1,22 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build outputs
+bin/
+obj/
+
+# Rider / VS Code (opsiyonel)
+.idea/
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+
+# SSL private keys
+*.key
+nginx/certs/*.key
+nginx/certs/*.crt
