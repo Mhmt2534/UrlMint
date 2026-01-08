@@ -20,11 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
     <Folder Include="Infrastructure\Helpers\" />
     <Folder Include="Infrastructure\Caching\" />
     <Folder Include="Contracts\" />
-    <Folder Include="Infrastructure\Repositories\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
