@@ -68,6 +68,7 @@ namespace UrlMint.Controllers
         [HttpGet("/{code}")]
         public async Task<IActionResult> RedirectToLongUrl(string code)
         {
+            if (code == "favicon.ico") return NotFound();
             try
             {
                 var id = _encoder.Decode(code);
@@ -76,10 +77,9 @@ namespace UrlMint.Controllers
                 if (shortUrl == null)
                     return NotFound(new { error = "URL bulunamadı." });
 
-                // Click count'u artır (fire-and-forget)
-                _ = _repository.UpdateClickCountAsync(id);
-
+                await _repository.UpdateClickCountAsync(id);
                 return Redirect(shortUrl.LongUrl);
+
             }
             catch (ArgumentException)
             {
