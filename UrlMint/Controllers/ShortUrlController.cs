@@ -65,7 +65,7 @@ namespace UrlMint.Controllers
 
         }
 
-        [HttpGet("{code}")]
+        [HttpGet("/{code}")]
         public async Task<IActionResult> RedirectToLongUrl(string code)
         {
             try
