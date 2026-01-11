@@ -23,10 +23,10 @@ namespace UrlMint.Controllers
         public async Task<IActionResult> ShortenUrl([FromBody] ShortenUrlRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.LongUrl))
-                return BadRequest(new { error = "URL gereklidir" });
+                return BadRequest(new { error = "URL is required." });
 
             if (!Uri.TryCreate(request.LongUrl, UriKind.Absolute, out _))
-                return BadRequest(new { error = "Geçersiz URL formatı." });
+                return BadRequest(new { error = "Invalid URL format." });
 
             var existing = await _repository.GetByLongUrlAsync(request.LongUrl);
             if (existing!=null)
@@ -75,15 +75,29 @@ namespace UrlMint.Controllers
                 var shortUrl = await _repository.GetByIdAsync(id);
 
                 if (shortUrl == null)
-                    return NotFound(new { error = "URL bulunamadı." });
+                    return NotFound(new { error = "The URL could not be found" });
 
-                await _repository.UpdateClickCountAsync(id);
+                var headers = Request.Headers;
+                bool isPrefetch = headers.ContainsKey("sec-purpose") &&
+                                  headers["sec-purpose"].ToString().ToLower().Contains("prefetch");
+
+
+                if (!isPrefetch)
+                {
+                    // This is a request from a real person, increment counter.
+                    await _repository.UpdateClickCountAsync(id);
+                }
+                else
+                {
+                    Console.WriteLine("Preload detected, counter not incremented");
+                }
+
                 return Redirect(shortUrl.LongUrl);
 
             }
             catch (ArgumentException)
             {
-                return BadRequest(new { error = "Geçersiz kısa URL kodu." });
+                return BadRequest(new { error = "Invalid short URL code." });
             }
         }
 
@@ -96,7 +110,7 @@ namespace UrlMint.Controllers
                 var shortUrl = await _repository.GetByIdAsync(id);
 
                 if (shortUrl == null)
-                    return NotFound(new { error = "URL bulunamadı." });
+                    return NotFound(new { error = "The URL could not be found" });
 
                 return Ok(new
                 {
@@ -108,7 +122,7 @@ namespace UrlMint.Controllers
             }
             catch (ArgumentException)
             {
-                return BadRequest(new { error = "Geçersiz kısa URL kodu." });
+                return BadRequest(new { error = "Invalide short URL code" });
             }
         }
 
