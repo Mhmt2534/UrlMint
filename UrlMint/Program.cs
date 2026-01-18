@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UrlMint.Domain.Interfaces;
+using UrlMint.Infrastructure.BackgroundTasks;
 using UrlMint.Infrastructure.Encoding;
 using UrlMint.Infrastructure.Persistence;
 using UrlMint.Infrastructure.Repositories;
@@ -18,6 +19,15 @@ builder.Services.AddDbContext<UrlMintDbContext>(options =>
 builder.Services.AddSingleton<IUrlEncoder, Base62Encoder>();
 builder.Services.AddScoped<IShortUrlRepository,ShortUrlRepository>();
 
+//Queue
+// Add the queue as a singleton (Only one queue)
+builder.Services.AddSingleton<IBackgroundTaskQueue>(ctx =>
+{
+    return new BackgroundTaskQueue(100); // Queue capacity 100  
+});
+
+// Add worker services (will run in the background)
+builder.Services.AddHostedService<QueuedHostedService>();
 
 // Add services to the container.
 builder.Services.AddControllers();

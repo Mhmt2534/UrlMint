@@ -12,11 +12,13 @@ namespace UrlMint.Controllers
     {
         private readonly IShortUrlRepository _repository;
         private readonly IUrlEncoder _encoder;
+        private readonly IBackgroundTaskQueue _queue;
 
-        public ShortUrlController(IShortUrlRepository repository, IUrlEncoder encoder)
+        public ShortUrlController(IShortUrlRepository repository, IUrlEncoder encoder, IBackgroundTaskQueue queue)
         {
             _repository = repository;
             _encoder = encoder;
+            _queue = queue;
         }
 
         [HttpPost("shorten")]
@@ -85,7 +87,15 @@ namespace UrlMint.Controllers
                 if (!isPrefetch)
                 {
                     // This is a request from a real person, increment counter.
-                    await _repository.UpdateClickCountAsync(id);
+                    await _queue.QueueBackgroundWorkItemAsync(async (serviceProvider, token) =>
+                    {
+                        // Burası arka plandaki Worker Service içinde çalışacak.
+                        // serviceProvider, Worker'ın yarattığı taze scope'tan geliyor.
+                        var repo = serviceProvider.GetRequiredService<IShortUrlRepository>();
+
+                        await repo.UpdateClickCountAsync(id);
+                        Console.WriteLine($"Click count updated via Queue for ID: {id}");
+                    });
                 }
                 else
                 {
