@@ -22,7 +22,7 @@ namespace UrlMint.Controllers
         }
 
         [HttpPost("shorten")]
-        public async Task<IActionResult> ShortenUrl([FromBody] ShortenUrlRequest request)
+        public async Task<IActionResult> ShortenUrl([FromBody] ShortUrlRequestDto request)
         {
             if (string.IsNullOrWhiteSpace(request.LongUrl))
                 return BadRequest(new { error = "URL is required." });
@@ -89,8 +89,6 @@ namespace UrlMint.Controllers
                     // This is a request from a real person, increment counter.
                     await _queue.QueueBackgroundWorkItemAsync(async (serviceProvider, token) =>
                     {
-                        // Burası arka plandaki Worker Service içinde çalışacak.
-                        // serviceProvider, Worker'ın yarattığı taze scope'tan geliyor.
                         var repo = serviceProvider.GetRequiredService<IShortUrlRepository>();
 
                         await repo.UpdateClickCountAsync(id);

@@ -4,6 +4,8 @@ using UrlMint.Infrastructure.BackgroundTasks;
 using UrlMint.Infrastructure.Encoding;
 using UrlMint.Infrastructure.Persistence;
 using UrlMint.Infrastructure.Repositories;
+using UrlMint.Services;
+using UrlMint.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,7 @@ builder.Services.AddDbContext<UrlMintDbContext>(options =>
 //DI Registration
 builder.Services.AddSingleton<IUrlEncoder, Base62Encoder>();
 builder.Services.AddScoped<IShortUrlRepository,ShortUrlRepository>();
+builder.Services.AddScoped<IShortUrlService,ShortUrlService>();
 
 //Queue
 // Add the queue as a singleton (Only one queue)
