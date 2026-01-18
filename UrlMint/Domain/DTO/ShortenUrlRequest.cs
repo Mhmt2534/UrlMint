@@ -1,6 +1,6 @@
 ﻿namespace UrlMint.Domain.DTO
 {
-    public class ShortenUrlRequest
+    public class ShortenUrlRequestDto
     {
         public string LongUrl { get; set; } =string.Empty;  
     }
