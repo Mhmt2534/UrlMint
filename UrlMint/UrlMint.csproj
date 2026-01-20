@@ -23,7 +23,6 @@
     <Folder Include="Infrastructure\Helpers\" />
     <Folder Include="Infrastructure\Caching\" />
     <Folder Include="Contracts\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
