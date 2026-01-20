@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using UrlMint.Domain.DTO;
 using UrlMint.Domain.Entities;
 using UrlMint.Domain.Interfaces;
+using UrlMint.Services.Interfaces;
 
 namespace UrlMint.Controllers
 {
@@ -10,15 +11,13 @@ namespace UrlMint.Controllers
     [ApiController]
     public class ShortUrlController : ControllerBase
     {
-        private readonly IShortUrlRepository _repository;
+        private readonly IShortUrlService _service;
         private readonly IUrlEncoder _encoder;
-        private readonly IBackgroundTaskQueue _queue;
 
-        public ShortUrlController(IShortUrlRepository repository, IUrlEncoder encoder, IBackgroundTaskQueue queue)
+        public ShortUrlController(IShortUrlService service , IUrlEncoder encoder)
         {
-            _repository = repository;
+            _service = service;
             _encoder = encoder;
-            _queue = queue;
         }
 
         [HttpPost("shorten")]
@@ -30,78 +29,43 @@ namespace UrlMint.Controllers
             if (!Uri.TryCreate(request.LongUrl, UriKind.Absolute, out _))
                 return BadRequest(new { error = "Invalid URL format." });
 
-            var existing = await _repository.GetByLongUrlAsync(request.LongUrl);
+            var existing = await _service.GetByLongUrlAsync(request);
             if (existing!=null)
             {
-                var existingCode = _encoder.Encode(existing.Id);
-                return Ok(new
-                {
-                    shortUrl = $"{Request.Scheme}://{Request.Host}/{existingCode}",
-                    shortCode = existingCode,
-                    longUrl = existing.LongUrl,
-                    createdAt = existing.CreatedAt
-                });
+                var response = CreateResponse(existing);
+                return Ok(response);
             }
 
-            var shortUrl = new ShortUrl
-            {
-                LongUrl = request.LongUrl,
-                CreatedAt = DateTime.UtcNow,
-                ClickCount = 0
-            };
-
-            var created = await _repository.CreateAsync(shortUrl);
-            var shortCode = _encoder.Encode(created.Id);
+            var created = await _service.UrlShortener(request);
+            var createdResponse = CreateResponse(created);
 
             return CreatedAtAction(
                 nameof(GetUrlInfo),
-                new { code = shortCode },
-                new
-                {
-                    shortUrl = $"{Request.Scheme}://{Request.Host}/{shortCode}",
-                    shortCode = shortCode,
-                    longUrl = created.LongUrl,
-                    createdAt = created.CreatedAt
-                });
-
-
+                new { code = created.ShortCode },
+               createdResponse
+            );
         }
 
         [HttpGet("/{code}")]
         public async Task<IActionResult> RedirectToLongUrl(string code)
         {
             if (code == "favicon.ico") return NotFound();
-            try
-            {
-                var id = _encoder.Decode(code);
-                var shortUrl = await _repository.GetByIdAsync(id);
-
-                if (shortUrl == null)
-                    return NotFound(new { error = "The URL could not be found" });
-
+          
                 var headers = Request.Headers;
                 bool isPrefetch = headers.ContainsKey("sec-purpose") &&
                                   headers["sec-purpose"].ToString().ToLower().Contains("prefetch");
+            try
+            {
+                // 2. İş mantığını servise devrediyoruz (Queue işlemi servisin içinde)
+                var longUrl = await _service.RedirectToLongUrl(code, isPrefetch);
 
-
-                if (!isPrefetch)
+                if (string.IsNullOrEmpty(longUrl))
                 {
-                    // This is a request from a real person, increment counter.
-                    await _queue.QueueBackgroundWorkItemAsync(async (serviceProvider, token) =>
-                    {
-                        var repo = serviceProvider.GetRequiredService<IShortUrlRepository>();
-
-                        await repo.UpdateClickCountAsync(id);
-                        Console.WriteLine($"Click count updated via Queue for ID: {id}");
-                    });
-                }
-                else
-                {
-                    Console.WriteLine("Preload detected, counter not incremented");
+                    return NotFound(new { error = "The URL could not be found" });
                 }
 
-                return Redirect(shortUrl.LongUrl);
-
+                // 3. Sadece yönlendirme yapıyoruz
+                return Redirect(longUrl);
             }
             catch (ArgumentException)
             {
@@ -114,8 +78,7 @@ namespace UrlMint.Controllers
         {
             try
             {
-                var id = _encoder.Decode(code);
-                var shortUrl = await _repository.GetByIdAsync(id);
+                var shortUrl = await _service.GetByIdAsync(code);
 
                 if (shortUrl == null)
                     return NotFound(new { error = "The URL could not be found" });
@@ -137,18 +100,26 @@ namespace UrlMint.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> GetAllUrls()
         {
-            var urls = await _repository.GetAllAsync();
-            var result = urls.Select(u => new
-            {
-                shortCode = _encoder.Encode(u.Id),
-                longUrl = u.LongUrl,
-                createdAt = u.CreatedAt,
-                clickCount = u.ClickCount
-            });
+            var result = await _service.GetAllAsync();
 
             return Ok(result);
         }
-    }
 
+
+        //Helper Methods
+        private object  CreateResponse(ShortUrlResponseDto dto)
+        {
+            return new
+            {
+                shortUrl = $"{Request.Scheme}://{Request.Host}/{dto.ShortCode}",
+                shortCode = dto.ShortCode,
+                longUrl = dto.LongUrl,
+                createdAt = dto.CreatedAt // CreatedAt'in DTO'da olduğundan emin olun
+            };
+        }
+
+
+
+    }
 }
 
