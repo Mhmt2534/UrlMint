@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using UrlMint.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using UrlMint.Infrastructure.Persistence;
 namespace UrlMint.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(UrlMintDbContext))]
-    partial class UrlMintDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260119123809_UpdateClickCount")]
+    partial class UpdateClickCount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
