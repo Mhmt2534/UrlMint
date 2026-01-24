@@ -12,12 +12,10 @@ namespace UrlMint.Controllers
     public class ShortUrlController : ControllerBase
     {
         private readonly IShortUrlService _service;
-        private readonly IUrlEncoder _encoder;
 
-        public ShortUrlController(IShortUrlService service , IUrlEncoder encoder)
+        public ShortUrlController(IShortUrlService service)
         {
             _service = service;
-            _encoder = encoder;
         }
 
         [HttpPost("shorten")]

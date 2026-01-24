@@ -20,6 +20,24 @@ namespace UrlMint.Infrastructure.Repositories
             return shortUrl;
         }
 
+        public async Task<bool> UpdateAsync(ShortUrl shortUrl)
+        {
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+
+        public async Task<bool> UpdateClickCountAsync(long id)
+        {
+            var shortUrl = await _context.ShortUrls.FindAsync(id);
+            if (shortUrl == null)
+                return false;
+
+            shortUrl.ClickCount++;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<IEnumerable<ShortUrl>> GetAllAsync()
         {
             return await _context.ShortUrls
@@ -42,15 +60,7 @@ namespace UrlMint.Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.LongUrl == longUrl);
         }
 
-        public async Task<bool> UpdateClickCountAsync(long id)
-        {
-            var shortUrl = await _context.ShortUrls.FindAsync(id);
-            if (shortUrl == null)
-                return false;
-
-            shortUrl.ClickCount++;
-            await _context.SaveChangesAsync();
-            return true;
-        }
+       
+       
     }
 }

@@ -98,6 +98,7 @@ namespace UrlMint.Services
      
         public async Task<ShortUrlResponseDto> UrlShortener(ShortUrlRequestDto requestDto)
         {
+
             var shortUrl = new ShortUrl
             {
                 LongUrl = requestDto.LongUrl,
@@ -106,15 +107,21 @@ namespace UrlMint.Services
             };
 
             var created = await _repository.CreateAsync(shortUrl);
-            var shortCode = _encoder.Encode(created.Id);
+
+            created.ShortCode = _encoder.Encode(created.Id);
+
+            await _repository.UpdateAsync(shortUrl);
 
             return new ShortUrlResponseDto
             {
-                ShortCode = shortCode,
+                ShortCode = created.ShortCode,
                 LongUrl = created.LongUrl,
                 CreatedAt = created.CreatedAt,
                 ClickCount = 0
             };
         }
+
+       
+
     }
 }
