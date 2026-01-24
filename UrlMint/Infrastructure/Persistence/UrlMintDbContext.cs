@@ -13,11 +13,24 @@ namespace UrlMint.Infrastructure.Persistence
         {
             modelBuilder.Entity<ShortUrl>(entity =>
             {
-                entity.HasKey(x => x.Id);
+                entity
+                .HasKey(x => x.Id);
 
-                entity.Property(x=>x.LongUrl).IsRequired();
+                entity
+                .Property(x => x.ShortCode)
+                .HasMaxLength(12);
 
-                entity.Property(x => x.CreatedAt).HasDefaultValueSql("NOW()");
+                //entity
+                //.HasIndex(x => x.ShortCode)
+                //.IsUnique();
+
+                entity
+                .Property(x=>x.LongUrl)
+                .IsRequired();
+
+                entity
+                .Property(x => x.CreatedAt)
+                .HasDefaultValueSql("NOW()");
             });
 
 

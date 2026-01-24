@@ -42,6 +42,11 @@ namespace UrlMint.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ShortCode")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
                     b.HasKey("Id");
 
                     b.ToTable("ShortUrls");
