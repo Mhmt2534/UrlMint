@@ -20,9 +20,9 @@ namespace UrlMint.Infrastructure.Persistence
                 .Property(x => x.ShortCode)
                 .HasMaxLength(12);
 
-                //entity
-                //.HasIndex(x => x.ShortCode)
-                //.IsUnique();
+                entity
+                .HasIndex(x => x.ShortCode)
+                .IsUnique();
 
                 entity
                 .Property(x=>x.LongUrl)
