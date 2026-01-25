@@ -50,8 +50,7 @@ namespace UrlMint.Services
 
         public async Task<string> RedirectToLongUrl(string code, bool isPrefetch)
         {
-            var id = _encoder.Decode(code);
-            var response = await _repository.GetByIdAsync(id);
+            var response = await _repository.GetByShortCodeAsync(code);
 
             if (response == null) return null;
 
@@ -61,8 +60,8 @@ namespace UrlMint.Services
                 {
                     var repo = serviceProvider.GetRequiredService<IShortUrlRepository>();
 
-                    await repo.UpdateClickCountAsync(id);
-                    Console.WriteLine($"Click count updated via Queue for ID: {id}");
+                    await repo.UpdateClickCountAsync(response.Id);
+                    Console.WriteLine($"Click count updated via Queue for ID: {response.Id}");
                 });
 
             }
@@ -121,7 +120,17 @@ namespace UrlMint.Services
             };
         }
 
-       
+        public async Task<ShortUrlResponseDto> GetByShortCodeAsync(string code)
+        {
+            var response = await _repository.GetByShortCodeAsync(code);
+            return new ShortUrlResponseDto
+            {
+                ShortCode = response.ShortCode,
+                LongUrl = response.LongUrl,
+                CreatedAt = response.CreatedAt,
+                ClickCount = response.ClickCount
+            };
 
+        }
     }
 }

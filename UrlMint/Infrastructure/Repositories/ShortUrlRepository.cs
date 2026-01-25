@@ -60,7 +60,11 @@ namespace UrlMint.Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.LongUrl == longUrl);
         }
 
-       
-       
+        public async Task<ShortUrl> GetByShortCodeAsync(string shortCode)
+        {
+            return await _context.ShortUrls
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => shortCode == x.ShortCode);
+        }
     }
 }

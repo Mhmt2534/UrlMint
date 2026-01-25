@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using UrlMint.Domain.DTO;
-using UrlMint.Domain.Entities;
-using UrlMint.Domain.Interfaces;
 using UrlMint.Services.Interfaces;
 
 namespace UrlMint.Controllers
@@ -103,7 +100,7 @@ namespace UrlMint.Controllers
             return Ok(result);
         }
 
-
+        
         //Helper Methods
         private object  CreateResponse(ShortUrlResponseDto dto)
         {
