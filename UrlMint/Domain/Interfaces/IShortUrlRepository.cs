@@ -10,6 +10,7 @@ namespace UrlMint.Domain.Interfaces
         Task<ShortUrl> GetByShortCodeAsync(string shortCode);
         Task<ShortUrl> GetByLongUrlAsync(string longUrl);
         Task<bool> UpdateClickCountAsync(long id);
+        Task BatchUpdateClickCountAsync(string shortCode, long countToAdd);
         Task<IEnumerable<ShortUrl>> GetAllAsync();
 
     }

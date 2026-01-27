@@ -51,7 +51,7 @@ namespace UrlMint.Controllers
                                   headers["sec-purpose"].ToString().ToLower().Contains("prefetch");
             try
             {
-                // 2. İş mantığını servise devrediyoruz (Queue işlemi servisin içinde)
+                // We are transferring the business logic to the service (Queue operation is inside the service)
                 var longUrl = await _service.RedirectToLongUrl(code, isPrefetch);
 
                 if (string.IsNullOrEmpty(longUrl))
@@ -59,7 +59,7 @@ namespace UrlMint.Controllers
                     return NotFound(new { error = "The URL could not be found" });
                 }
 
-                // 3. Sadece yönlendirme yapıyoruz
+                // 3. We only provide redirect.
                 return Redirect(longUrl);
             }
             catch (ArgumentException)
@@ -109,7 +109,7 @@ namespace UrlMint.Controllers
                 shortUrl = $"{Request.Scheme}://{Request.Host}/{dto.ShortCode}",
                 shortCode = dto.ShortCode,
                 longUrl = dto.LongUrl,
-                createdAt = dto.CreatedAt // CreatedAt'in DTO'da olduğundan emin olun
+                createdAt = dto.CreatedAt 
             };
         }
 

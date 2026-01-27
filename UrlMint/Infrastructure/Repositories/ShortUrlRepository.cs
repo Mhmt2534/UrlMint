@@ -38,6 +38,14 @@ namespace UrlMint.Infrastructure.Repositories
             return true;
         }
 
+        public async Task BatchUpdateClickCountAsync(string shortCode, long countToAdd)
+        {
+            // Direct update with SQL (The most efficient method)
+            await _context.Database.ExecuteSqlRawAsync(
+                "UPDATE \"ShortUrls\" SET \"ClickCount\" = \"ClickCount\" + {0} WHERE \"ShortCode\" = {1}",
+                countToAdd, shortCode);
+        }
+
         public async Task<IEnumerable<ShortUrl>> GetAllAsync()
         {
             return await _context.ShortUrls

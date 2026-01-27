@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using UrlMint.Domain.Interfaces;
 using UrlMint.Infrastructure.BackgroundTasks;
 using UrlMint.Infrastructure.Encoding;
@@ -17,20 +18,25 @@ builder.Services.AddDbContext<UrlMintDbContext>(options =>
         );
 });
 
+string redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+
+//Redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnectionString;
+    options.InstanceName = "UrlMint_";
+});
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(redisConnectionString));
+
 //DI Registration
 builder.Services.AddSingleton<IUrlEncoder, Base62Encoder>();
 builder.Services.AddScoped<IShortUrlRepository,ShortUrlRepository>();
 builder.Services.AddScoped<IShortUrlService,ShortUrlService>();
 
-//Queue
-// Add the queue as a singleton (Only one queue)
-builder.Services.AddSingleton<IBackgroundTaskQueue>(ctx =>
-{
-    return new BackgroundTaskQueue(100); // Queue capacity 100  
-});
+builder.Services.AddHostedService<UrlStatsBackgroundService>();
 
-// Add worker services (will run in the background)
-builder.Services.AddHostedService<QueuedHostedService>();
 
 // Add services to the container.
 builder.Services.AddControllers();

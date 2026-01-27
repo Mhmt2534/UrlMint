@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using StackExchange.Redis; // Bu namespace gerekli
+using Microsoft.Extensions.Caching.Distributed;
 using UrlMint.Domain.DTO;
 using UrlMint.Domain.Entities;
 using UrlMint.Domain.Interfaces;
@@ -11,20 +11,23 @@ namespace UrlMint.Services
     {
         private readonly IShortUrlRepository _repository;
         private readonly IUrlEncoder _encoder;
-        private readonly IBackgroundTaskQueue _queue;
+        private readonly IDistributedCache _cache;
+        private readonly IDatabase _redisDb; //Just redis
 
-        public ShortUrlService(IShortUrlRepository repository, IUrlEncoder encoder, IBackgroundTaskQueue queue)
+        public ShortUrlService(IShortUrlRepository repository, IUrlEncoder encoder
+            , IDistributedCache cache, IConnectionMultiplexer redisMultiplexer)
         {
             _repository = repository;
             _encoder = encoder;
-            _queue = queue;
+            _cache = cache;
+            _redisDb = redisMultiplexer.GetDatabase();
         }
 
         public async Task<IEnumerable<ShortUrlResponseDto>> GetAllAsync()
         {
             var urls = await _repository.GetAllAsync();
-                
-            var result =  urls.Select(u => new ShortUrlResponseDto
+
+            var result = urls.Select(u => new ShortUrlResponseDto
             {
                 ShortCode = _encoder.Encode(u.Id),
                 LongUrl = u.LongUrl,
@@ -41,7 +44,7 @@ namespace UrlMint.Services
             var response = await _repository.GetByIdAsync(id);
             return new ShortUrlResponseDto
             {
-                ShortCode=code,
+                ShortCode = code,
                 LongUrl = response.LongUrl,
                 CreatedAt = response.CreatedAt,
                 ClickCount = response.ClickCount
@@ -50,27 +53,41 @@ namespace UrlMint.Services
 
         public async Task<string> RedirectToLongUrl(string code, bool isPrefetch)
         {
-            var response = await _repository.GetByShortCodeAsync(code);
 
-            if (response == null) return null;
+            string cacheKey = $"url:{code}";
+
+            var cachedUrl = await _cache.GetStringAsync(cacheKey);
+
+
+            if (string.IsNullOrEmpty(cachedUrl))
+            {
+                var response = await _repository.GetByShortCodeAsync(code);
+
+                if (response == null) return null;
+
+                cachedUrl = response.LongUrl;
+
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12),
+                    SlidingExpiration = TimeSpan.FromMinutes(30)
+                };
+
+                await _cache.SetStringAsync(cacheKey, cachedUrl, options);
+            }
+
 
             if (!isPrefetch)
             {
-                await _queue.QueueBackgroundWorkItemAsync(async (serviceProvider, token) =>
-                {
-                    var repo = serviceProvider.GetRequiredService<IShortUrlRepository>();
-
-                    await repo.UpdateClickCountAsync(response.Id);
-                    Console.WriteLine($"Click count updated via Queue for ID: {response.Id}");
-                });
-
+                await _redisDb.StringIncrementAsync($"stats:click:{code}");
             }
             else
             {
                 Console.WriteLine("Preload detected, counter not incremented");
             }
 
-            return response.LongUrl;
+            return cachedUrl;
+
         }
 
 
@@ -94,7 +111,7 @@ namespace UrlMint.Services
             return responseDto;
         }
 
-     
+
         public async Task<ShortUrlResponseDto> UrlShortener(ShortUrlRequestDto requestDto)
         {
 

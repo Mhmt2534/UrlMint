@@ -23,20 +23,19 @@ namespace UrlMint.Infrastructure.BackgroundTasks
             {
                 try
                 {
-                    // 1. Kuyruktan işi al
+                    // 1. Take the job from the queue
                     var workItem = await _taskQueue.DequeueAsync(stoppingToken);
 
-                    // 2. Yeni bir Scope (alan) oluştur. 
-                    // Önceki cevabımdaki ScopeFactory mantığı burada çalışacak.
+                    // 2. Create a new scope. 
                     using (var scope = _serviceProvider.CreateScope())
                     {
-                        // 3. İşi çalıştır ve Scope'un Provider'ını işe gönder
+                        // 3. Run the job and sen Scope's Provider to work
                         await workItem(scope.ServiceProvider, stoppingToken);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Arka plan servisinde hata oluştu.");
+                    _logger.LogError(ex, "An error occured in the background service.");
                 }
             }
         }
