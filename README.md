@@ -7,6 +7,8 @@ UrlMint, ASP.NET Core 9.0 ve PostgreSQL kullanarak geliştirilmiş modern bir UR
 - ✅ URL kısaltma ve yönlendirme
 - ✅ Base62 encoding ile kısa kod üretimi
 - ✅ Tıklama sayısı takibi
+- ✅ Redis ile URL cacheleme
+- ✅ Redis tabanlı tıklama istatistikleri & arka plan senkronizasyonu
 - ✅ URL bilgisi sorgulama
 - ✅ Tüm URL'leri listeleme
 - ✅ PostgreSQL veritabanı desteği
@@ -16,6 +18,7 @@ UrlMint, ASP.NET Core 9.0 ve PostgreSQL kullanarak geliştirilmiş modern bir UR
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [PostgreSQL](https://www.postgresql.org/download/) (12 veya üzeri)
+- [Redis](https://redis.io/download) (lokalde veya Docker ile, varsayılan port: 6379)
 - Visual Studio 2022, VS Code veya herhangi bir .NET uyumlu IDE
 
 ## 🔧 Kurulum
@@ -37,7 +40,7 @@ CREATE DATABASE urlmint;
 
 ### 3. Connection String Yapılandırması
 
-`UrlMint/appsettings.Development.json` dosyasını oluşturun (veya `appsettings.Development.json.example` dosyasını kopyalayıp düzenleyin):
+`UrlMint/appsettings.Development.json` dosyasını oluşturun (veya `appsettings.Development.json.example` dosyasını kopyalayıp düzenleyin) ve hem PostgreSQL hem Redis connection string'lerini ekleyin:
 
 ```json
 {
@@ -49,7 +52,8 @@ CREATE DATABASE urlmint;
   },
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=urlmint;Username=postgres;Password=your_password"
+    "DefaultConnection": "Host=localhost;Database=UrlMint;Username=postgres;Password=your_password;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200;",
+    "Redis": "localhost:6379"
   }
 }
 ```
@@ -233,10 +237,22 @@ UrlMint/
 │   ├── Persistence/
 │   │   ├── UrlMintDbContext.cs    # EF Core DbContext
 │   │   └── Migrations/             # Veritabanı migration'ları
+│   ├── BackgroundTasks/
+│   │   └── UrlStatsBackgroundService.cs # Redis click sayacı senkronizasyonu
 │   └── Repositories/
 │       └── ShortUrlRepository.cs  # Repository implementasyonu
+├── Services/
+│   ├── Interfaces/
+│   │   └── IShortUrlService.cs    # Servis interface'i
+│   └── ShortUrlService.cs         # Redis + cache kullanan servis katmanı
 └── Program.cs                      # Uygulama giriş noktası
 ```
+
+### Redis Kullanımı (Özet)
+
+- **IDistributedCache (StackExchange.Redis)** ile kısa kod → uzun URL eşlemesi Redis'te cache'lenir (`url:{code}` anahtarı).
+- Tıklama sayıları direkt veritabanına yazılmak yerine Redis içinde `stats:click:{code}` anahtarı altında artırılır.
+- `UrlStatsBackgroundService`, belirli aralıklarla bu Redis istatistiklerini okuyup veritabanındaki `ClickCount` alanına toplu olarak uygular.
 
 ---
 
@@ -248,6 +264,8 @@ UrlMint/
 - **Entity Framework Core 9.0** - ORM
 - **PostgreSQL** - Veritabanı
 - **Npgsql** - PostgreSQL provider
+- **Redis** - In-memory veri yapısı deposu ve önbellekleme
+- **StackExchange.Redis** - Yüksek performanslı Redis kütüphanesi
 
 ---
 
@@ -272,6 +290,24 @@ dotnet ef database update
 ### Port Çakışması
 
 `Properties/launchSettings.json` dosyasından port numarasını değiştirebilirsiniz.
+
+---
+
+## ⚡ Performans Analizi
+
+Sistemin hızını ve dayanıklılığını ölçmek amacıyla **k6** kullanılarak 50 eşzamanlı kullanıcı (VUs) ile yük testleri yapılmıştır. Sonuçlar, veritabanı optimizasyonunun etkisini net bir şekilde göstermektedir.
+
+| Metrik | İndekssiz | **İndeksli** | Redis + İndeks |
+| :--- | :--- | :--- | :--- |
+| **Ortalama Yanıt Süresi** | 29.32 ms | **3.57 ms** | 19.01 ms |
+| **Saniyedeki İstek (RPS)**| 384 req/s | **479 req/s** | 416 req/s |
+| **p(95) Gecikme** | 53.52 ms | **12.45 ms** | 43.53 ms |
+| **Başarı Oranı** | %100 | **%100** | %100 |
+
+### 🔍 Optimizasyon Çıkarımları
+* **8 Kat Hız Artışı:** `ShortCode` kolonu üzerindeki B-Tree indeksleme sayesinde yönlendirme süreleri %700'den fazla iyileşmiştir.
+* **Ölçeklenebilirlik:** Sorgu optimizasyonu ile p(95) gecikme süresi 53ms'den 12ms'ye düşürülerek sistemin yoğun yük altında kararlı çalışması sağlanmıştır.
+* **Mimari:** Yüksek trafikli senaryolarda veritabanı yükünü azaltmak amacıyla Redis önbellekleme katmanı mimariye dahil edilmiştir.
 
 ---
 

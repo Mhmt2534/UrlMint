@@ -1,1 +1,26 @@
 # Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+# .NET Build 
+bin/
+obj/
+
+# Packages
+packages/
+node_modules/
+.library/
+
+# Visual Studio and Rider files
+.vs/
+.idea/
+*.user
+*.userosscache
+*.sln.docattachments
+
+# Private data and configs
+*.suo
+.env
+appsettings.Development.json
+appsettings.Local.json
+
+# Test ve Coverage outputs
+TestResults/
+*.sequenced
