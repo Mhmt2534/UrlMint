@@ -31,7 +31,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(redisConnectionString));
 
 //DI Registration
-builder.Services.AddSingleton<IUrlEncoder, Base62Encoder>();
+builder.Services.AddSingleton<IUrlEncoder, UrlEncoder>();
 builder.Services.AddScoped<IShortUrlRepository,ShortUrlRepository>();
 builder.Services.AddScoped<IShortUrlService,ShortUrlService>();
 

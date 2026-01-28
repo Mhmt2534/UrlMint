@@ -8,5 +8,9 @@
   "AllowedHosts": "*",
   "ConnectionStrings": {
     "DefaultConnection": "Host=localhost;Database=UrlMint;Username=postgres;Password=1234;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200;"
+  },
+  "HashidsSettings": {
+    "Salt": "UrlMint_Cok_Gizli_Key_2026",
+    "MinLength": 6
   }
 }
