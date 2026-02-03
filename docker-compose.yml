@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  urlmint-api:
+    image: urlmint-api
+    build:
+      context: .
+      dockerfile: UrlMint/Dockerfile
+    container_name: urlmint-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      HashidsSettings__Salt: your_salt_here
+      HashidsSettings__MinHashLength: 6
+      # PostgreSQL
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=urlmintdb;Username=postgres;Password=postgres;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200;
+
+      # Redis
+      ConnectionStrings__Redis: redis:6379
+    networks:
+      - urlmint-network
+
+  postgres:
+    image: postgres:16
+    container_name: urlmint-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: urlmintdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - urlmint-network
+
+  redis:
+    image: redis:7
+    container_name: urlmint-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - urlmint-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  urlmint-network:
+    driver: bridge
