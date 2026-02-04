@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Threading.Tasks;
 using UrlMint.Domain.Entities;
 using UrlMint.Domain.Interfaces;
 using UrlMint.Infrastructure.Persistence;
@@ -7,11 +9,23 @@ namespace UrlMint.Infrastructure.Repositories
 {
     public class ShortUrlRepository : IShortUrlRepository
     {
+
         private readonly UrlMintDbContext _context;
         public ShortUrlRepository(UrlMintDbContext context)
         {
             _context = context;
         }
+
+        public async Task<IDbContextTransaction> BeginTransaction()
+        {
+            return await _context.Database.BeginTransactionAsync();
+        }
+
+        public IExecutionStrategy GetExecutionStrategy()
+        {
+            return  _context.Database.CreateExecutionStrategy();
+        }
+
 
         public async Task<ShortUrl> CreateAsync(ShortUrl shortUrl)
         {
@@ -74,5 +88,8 @@ namespace UrlMint.Infrastructure.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => shortCode == x.ShortCode);
         }
+
+
+
     }
 }

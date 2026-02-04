@@ -1,9 +1,12 @@
-﻿using UrlMint.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using UrlMint.Domain.Entities;
 
 namespace UrlMint.Domain.Interfaces
 {
     public interface IShortUrlRepository
     {
+        Task<IDbContextTransaction> BeginTransaction();
+        IExecutionStrategy GetExecutionStrategy();
         Task<ShortUrl> CreateAsync(ShortUrl shortUrl);
         Task<bool> UpdateAsync(ShortUrl shortUrl);  
         Task<ShortUrl> GetByIdAsync(long id);
