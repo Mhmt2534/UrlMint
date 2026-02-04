@@ -100,6 +100,20 @@ namespace UrlMint.Controllers
             return Ok(result);
         }
 
+
+        [HttpGet("seed")]
+        public async Task<IActionResult> AddSeeds()
+        {
+            var testUrls = new List<string>();
+            for (int i = 0; i <= 10_000; i++)
+            {
+                testUrls.Add($"https://example.com/page-{i}");
+            }
+
+            await _service.SeedDataAsync(testUrls);
+            return Ok("10.000 records have been successfully added.");
+        }
+
         
         //Helper Methods
         private object  CreateResponse(ShortUrlResponseDto dto)

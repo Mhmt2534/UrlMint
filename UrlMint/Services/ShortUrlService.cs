@@ -4,6 +4,8 @@ using UrlMint.Domain.DTO;
 using UrlMint.Domain.Entities;
 using UrlMint.Domain.Interfaces;
 using UrlMint.Services.Interfaces;
+using UrlMint.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace UrlMint.Services
 {
@@ -13,14 +15,17 @@ namespace UrlMint.Services
         private readonly IUrlEncoder _encoder;
         private readonly IDistributedCache _cache;
         private readonly IDatabase _redisDb; //Just redis
+        private readonly UrlMintDbContext _dbContext;
 
         public ShortUrlService(IShortUrlRepository repository, IUrlEncoder encoder
-            , IDistributedCache cache, IConnectionMultiplexer redisMultiplexer)
+            , IDistributedCache cache, IConnectionMultiplexer redisMultiplexer
+            ,UrlMintDbContext dbContext)
         {
             _repository = repository;
             _encoder = encoder;
             _cache = cache;
             _redisDb = redisMultiplexer.GetDatabase();
+            _dbContext = dbContext;
         }
 
         public async Task<IEnumerable<ShortUrlResponseDto>> GetAllAsync()
@@ -148,6 +153,48 @@ namespace UrlMint.Services
                 ClickCount = response.ClickCount
             };
 
+        }
+
+        public async Task SeedDataAsync(List<string> longUrls)
+        {
+            var strategy = _repository.GetExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
+            {
+                using var transaction = await _repository.BeginTransaction();
+
+                try
+                {
+                    var entities = longUrls.Select(url => new ShortUrl
+                    {
+                        LongUrl = url,
+                        CreatedAt = DateTime.UtcNow,
+                        ClickCount = 0,
+                        ShortCode = Guid.NewGuid().ToString().Substring(0, 8)
+                    }).ToList();
+
+                    await _repository.CreatBatchAsync(entities);
+
+                    foreach (var entity in entities)
+                    {
+                        entity.ShortCode = _encoder.Encode(entity.Id);
+                    }
+
+
+                    await _repository.UpdateAsync(null);
+
+                    await transaction.CommitAsync();
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+
+                
+            });
+
+            
         }
     }
 }

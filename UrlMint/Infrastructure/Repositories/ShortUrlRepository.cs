@@ -90,6 +90,11 @@ namespace UrlMint.Infrastructure.Repositories
         }
 
 
+        public async Task CreatBatchAsync(IEnumerable<ShortUrl> shortUrls)
+        {
+            await _context.ShortUrls.AddRangeAsync(shortUrls);
+            await _context.SaveChangesAsync();
+        }
 
     }
 }
