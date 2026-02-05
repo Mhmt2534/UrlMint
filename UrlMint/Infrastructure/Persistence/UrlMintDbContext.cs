@@ -25,6 +25,12 @@ namespace UrlMint.Infrastructure.Persistence
                 .IsUnique();
 
                 entity
+                .HasIndex(x => x.ExpiresAt);
+
+                entity.Property(x => x.ExpiresAt)
+                .HasDefaultValueSql("NOW() + INTERVAL '30 days'");
+
+                entity
                 .Property(x=>x.LongUrl)
                 .IsRequired();
 
