@@ -68,14 +68,23 @@ namespace UrlMint.Services
             {
                 var response = await _repository.GetByShortCodeAsync(code);
 
-                if (response == null) return null;
+                if (response == null ||
+                    (response.ExpiresAt.HasValue && response.ExpiresAt.Value <= DateTime.UtcNow))
+                        return null;
+
+
+                var ttl = response.ExpiresAt.HasValue
+                ? response.ExpiresAt.Value - DateTime.UtcNow
+                : TimeSpan.FromHours(24);
+
+                if (ttl <= TimeSpan.Zero) return null;
+
 
                 cachedUrl = response.LongUrl;
 
                 var options = new DistributedCacheEntryOptions
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12),
-                    SlidingExpiration = TimeSpan.FromMinutes(30)
+                    AbsoluteExpirationRelativeToNow = ttl
                 };
 
                 await _cache.SetStringAsync(cacheKey, cachedUrl, options);

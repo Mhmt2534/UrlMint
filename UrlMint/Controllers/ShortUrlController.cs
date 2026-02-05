@@ -56,7 +56,7 @@ namespace UrlMint.Controllers
 
                 if (string.IsNullOrEmpty(longUrl))
                 {
-                    return NotFound(new { error = "The URL could not be found" });
+                    return StatusCode(410,"Link expired or not found");
                 }
 
                 // 3. We only provide redirect.
