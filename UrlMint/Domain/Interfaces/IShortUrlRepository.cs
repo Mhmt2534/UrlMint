@@ -16,6 +16,7 @@ namespace UrlMint.Domain.Interfaces
         Task BatchUpdateClickCountAsync(string shortCode, long countToAdd);
         Task<IEnumerable<ShortUrl>> GetAllAsync();
         Task CreatBatchAsync(IEnumerable<ShortUrl> shortUrls);
+        public Task DeleteOldExpiredUrlsAsync();
 
     }
 }

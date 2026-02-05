@@ -96,5 +96,17 @@ namespace UrlMint.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task DeleteOldExpiredUrlsAsync()
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                    @"
+                    DELETE FROM ""ShortUrls""
+                    WHERE ""ExpiresAt"" IS NOT NULL
+                    AND ""ExpiresAt"" < NOW() - INTERVAL '30 days'
+                    "
+                );
+        }
+
+
     }
 }
