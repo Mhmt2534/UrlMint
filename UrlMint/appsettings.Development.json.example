@@ -7,7 +7,8 @@
   },
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=UrlMint;Username=postgres;Password=1234;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200;"
+    "DefaultConnection": "Host=localhost;Database=UrlMint;Username=postgres;Password=1234;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200;",
+    "Redis": "localhost:6379"
   },
   "HashidsSettings": {
     "Salt": "UrlMint_Cok_Gizli_Key_2026",
