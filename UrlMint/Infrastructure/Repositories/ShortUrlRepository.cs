@@ -107,6 +107,11 @@ namespace UrlMint.Infrastructure.Repositories
                 );
         }
 
-
+        public async Task<bool> ExistsAsync(string shortCode)
+        {
+            return await _context.ShortUrls.AnyAsync(
+                x => x.ShortCode == shortCode
+                );
+        }
     }
 }

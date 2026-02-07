@@ -17,6 +17,7 @@ namespace UrlMint.Domain.Interfaces
         Task<IEnumerable<ShortUrl>> GetAllAsync();
         Task CreatBatchAsync(IEnumerable<ShortUrl> shortUrls);
         public Task DeleteOldExpiredUrlsAsync();
+        public Task<bool> ExistsAsync(string shortCode);
 
     }
 }
