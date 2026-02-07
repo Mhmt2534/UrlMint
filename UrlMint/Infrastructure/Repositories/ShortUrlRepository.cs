@@ -34,7 +34,7 @@ namespace UrlMint.Infrastructure.Repositories
             return shortUrl;
         }
 
-        public async Task<bool> UpdateAsync(ShortUrl shortUrl)
+        public async Task<bool> SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
             return true;

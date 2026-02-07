@@ -8,7 +8,7 @@ namespace UrlMint.Domain.Interfaces
         Task<IDbContextTransaction> BeginTransaction();
         IExecutionStrategy GetExecutionStrategy();
         Task<ShortUrl> CreateAsync(ShortUrl shortUrl);
-        Task<bool> UpdateAsync(ShortUrl shortUrl);  
+        Task<bool> SaveChangesAsync();  
         Task<ShortUrl> GetByIdAsync(long id);
         Task<ShortUrl> GetByShortCodeAsync(string shortCode);
         Task<ShortUrl> GetByLongUrlAsync(string longUrl);

@@ -32,28 +32,16 @@ namespace UrlMint.Services
         {
             var urls = await _repository.GetAllAsync();
 
-            var result = urls.Select(u => new ShortUrlResponseDto
-            {
-                ShortCode = _encoder.Encode(u.Id),
-                LongUrl = u.LongUrl,
-                CreatedAt = u.CreatedAt,
-                ClickCount = u.ClickCount
-            });
-
-            return result;
+            return urls.Select(ToDto);
         }
 
         public async Task<ShortUrlResponseDto> GetByIdAsync(string code)
         {
             var id = _encoder.Decode(code);
-            var response = await _repository.GetByIdAsync(id);
-            return new ShortUrlResponseDto
-            {
-                ShortCode = code,
-                LongUrl = response.LongUrl,
-                CreatedAt = response.CreatedAt,
-                ClickCount = response.ClickCount
-            };
+            var entity = await _repository.GetByIdAsync(id);
+
+
+            return ToDto(entity);
         }
 
         public async Task<string> RedirectToLongUrl(string code, bool isPrefetch)
@@ -107,28 +95,14 @@ namespace UrlMint.Services
 
         public async Task<ShortUrlResponseDto> GetByLongUrlAsync(ShortUrlRequestDto requestDto)
         {
+            var entity = await _repository.GetByLongUrlAsync(requestDto.LongUrl);
 
-            var result = await _repository.GetByLongUrlAsync(requestDto.LongUrl);
-
-            if (result == null)
-            {
-                return null;
-            }
-
-            var responseDto = new ShortUrlResponseDto
-            {
-                ShortCode = _encoder.Encode(result.Id),
-                LongUrl = result.LongUrl,
-                CreatedAt = result.CreatedAt,
-                ClickCount = result.ClickCount
-            };
-            return responseDto;
+            return ToDtoWithEncodedCode(entity);
         }
 
 
         public async Task<ShortUrlResponseDto> UrlShortener(ShortUrlRequestDto requestDto)
         {
-
             var shortUrl = new ShortUrl
             {
                 LongUrl = requestDto.LongUrl,
@@ -140,27 +114,15 @@ namespace UrlMint.Services
 
             created.ShortCode = _encoder.Encode(created.Id);
 
-            await _repository.UpdateAsync(shortUrl);
+            await _repository.SaveChangesAsync();
 
-            return new ShortUrlResponseDto
-            {
-                ShortCode = created.ShortCode,
-                LongUrl = created.LongUrl,
-                CreatedAt = created.CreatedAt,
-                ClickCount = 0
-            };
+            return ToDto(shortUrl);
         }
 
         public async Task<ShortUrlResponseDto> GetByShortCodeAsync(string code)
         {
-            var response = await _repository.GetByShortCodeAsync(code);
-            return new ShortUrlResponseDto
-            {
-                ShortCode = response.ShortCode,
-                LongUrl = response.LongUrl,
-                CreatedAt = response.CreatedAt,
-                ClickCount = response.ClickCount
-            };
+            var entity = await _repository.GetByShortCodeAsync(code);
+            return ToDto(entity);
 
         }
 
@@ -190,7 +152,7 @@ namespace UrlMint.Services
                     }
 
 
-                    await _repository.UpdateAsync(null);
+                    await _repository.SaveChangesAsync();
 
                     await transaction.CommitAsync();
                 }
@@ -200,10 +162,44 @@ namespace UrlMint.Services
                     throw;
                 }
 
-                
-            });
 
-            
+            });
         }
+
+
+        //Private Helpers
+        // Entity with short code
+        private ShortUrlResponseDto ToDto(ShortUrl entity)
+        {
+            if (entity == null) return null;
+
+            return new ShortUrlResponseDto
+            {
+                ShortCode = entity.ShortCode,
+                LongUrl = entity.LongUrl,
+                CreatedAt = entity.CreatedAt,
+                ExpiresAt = entity.ExpiresAt,
+                ClickCount = entity.ClickCount
+            };
+        }
+
+        // Entity without short code (Id -> encode)
+        private ShortUrlResponseDto ToDtoWithEncodedCode(ShortUrl entity)
+        {
+            if (entity == null) return null;
+
+            return new ShortUrlResponseDto
+            {
+                ShortCode = _encoder.Encode(entity.Id),
+                LongUrl = entity.LongUrl,
+                CreatedAt = entity.CreatedAt,
+                ExpiresAt = entity.ExpiresAt,
+                ClickCount = entity.ClickCount
+            };
+        }
+
+
+
+
     }
 }

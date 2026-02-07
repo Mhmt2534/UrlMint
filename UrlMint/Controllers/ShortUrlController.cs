@@ -32,12 +32,11 @@ namespace UrlMint.Controllers
             }
 
             var created = await _service.UrlShortener(request);
-            var createdResponse = CreateResponse(created);
 
             return CreatedAtAction(
-                nameof(GetUrlInfo),
-                new { code = created.ShortCode },
-               createdResponse
+                nameof(GetUrlInfo), //action
+                new { code = created.ShortCode }, //route value { "code" : 123}
+               CreateResponse(created)
             );
         }
 
@@ -78,13 +77,9 @@ namespace UrlMint.Controllers
                 if (shortUrl == null)
                     return NotFound(new { error = "The URL could not be found" });
 
-                return Ok(new
-                {
-                    shortCode = code,
-                    longUrl = shortUrl.LongUrl,
-                    createdAt = shortUrl.CreatedAt,
-                    clickCount = shortUrl.ClickCount
-                });
+                var response = CreateResponse(shortUrl);
+
+                return Ok(response);
             }
             catch (ArgumentException)
             {
@@ -123,11 +118,10 @@ namespace UrlMint.Controllers
                 shortUrl = $"{Request.Scheme}://{Request.Host}/{dto.ShortCode}",
                 shortCode = dto.ShortCode,
                 longUrl = dto.LongUrl,
-                createdAt = dto.CreatedAt 
+                createdAt = dto.CreatedAt ,
+                expriesAt = dto.ExpiresAt 
             };
         }
-
-
 
     }
 }
