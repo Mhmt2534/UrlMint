@@ -105,50 +105,19 @@ namespace UrlMint.Services
 
         public async Task<ShortUrlResponseDto> UrlShortener(ShortUrlRequestDto requestDto)
         {
-            string? shortcode=null;
+            var strategy = _repository.GetExecutionStrategy();
 
-            if (!string.IsNullOrWhiteSpace(requestDto.CustomAlias))
+            return await strategy.ExecuteAsync(async () =>
             {
-                var alias = requestDto.CustomAlias.ToLower();
+                await using var tx = await _repository.BeginTransaction();
 
-                AliasValidator.Validate(alias);
+                var result = await CreateInternalAsync(requestDto); //Create short urls
 
-                var exist = await _repository.ExistsAsync(alias);
-                if (exist)
-                    throw new ConflictException("Alias already in use");
-
-
-                shortcode = alias;
-
-            }
-
-
-            var shortUrl = new ShortUrl
-            {
-                LongUrl = requestDto.LongUrl,
-                CreatedAt = DateTime.UtcNow,
-                ShortCode = shortcode,
-                ClickCount = 0
-            };
-
-            try
-            {
-                var created = await _repository.CreateAsync(shortUrl);
-                await _repository.SaveChangesAsync();
-
-                if (shortUrl.ShortCode is null)
-                {
-                    created.ShortCode = _encoder.Encode(created.Id);
-                    await _repository.SaveChangesAsync();
-                }
-            }
-            catch (DbUpdateException ex) when (DbExceptionHelper.IsUniqueViolation(ex))
-            {
-                throw new ConflictException("Alias already in use");
-            }
-
-            return ToDto(shortUrl);
+                await tx.CommitAsync();
+                return result;
+            });
         }
+
 
         public async Task<ShortUrlResponseDto> GetByShortCodeAsync(string code)
         {
@@ -230,6 +199,52 @@ namespace UrlMint.Services
         }
 
 
+        private async Task<ShortUrlResponseDto> CreateInternalAsync(ShortUrlRequestDto requestDto)
+        {
+            string? shortcode = null;
+
+            if (!string.IsNullOrWhiteSpace(requestDto.CustomAlias))
+            {
+                var alias = requestDto.CustomAlias.ToLower();
+
+                AliasValidator.Validate(alias);
+
+                var exist = await _repository.ExistsAsync(alias);
+                if (exist)
+                    throw new ConflictException("Alias already in use");
+
+
+                shortcode = alias;
+
+            }
+
+
+            var shortUrl = new ShortUrl
+            {
+                LongUrl = requestDto.LongUrl,
+                CreatedAt = DateTime.UtcNow,
+                ShortCode = shortcode,
+                ClickCount = 0
+            };
+
+            try
+            {
+                var created = await _repository.CreateAsync(shortUrl);
+                await _repository.SaveChangesAsync();
+
+                if (shortUrl.ShortCode is null)
+                {
+                    created.ShortCode = _encoder.Encode(created.Id);
+                    await _repository.SaveChangesAsync();
+                }
+            }
+            catch (DbUpdateException ex) when (DbExceptionHelper.IsUniqueViolation(ex))
+            {
+                throw new ConflictException("Alias already in use");
+            }
+
+            return ToDto(shortUrl);
+        }
 
 
     }
