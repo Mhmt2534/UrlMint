@@ -12,7 +12,7 @@ namespace UrlMint.Services.Interfaces
 
         Task<ShortUrlResponseDto> GetByLongUrlAsync(ShortUrlRequestDto requestDto);
         Task<ShortUrlResponseDto> GetByIdAsync(string code);
-        Task<string> RedirectToLongUrl(string code, bool isPrefetch);
+        Task<string> RedirectToLongUrl(string code, bool isPrefetch, ClickEventDto clickData);
         Task<ShortUrlResponseDto> GetByShortCodeAsync(string code);
         Task SeedDataAsync(List<string> longUrls);
 

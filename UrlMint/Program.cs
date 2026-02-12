@@ -37,6 +37,7 @@ builder.Services.AddScoped<IShortUrlService,ShortUrlService>();
 
 builder.Services.AddHostedService<UrlStatsBackgroundService>();
 builder.Services.AddHostedService<ExpiredUrlCleanupService>();
+builder.Services.AddHostedService<ClickLogProcessor>();
 
 // Add services to the container.
 builder.Services.AddControllers();

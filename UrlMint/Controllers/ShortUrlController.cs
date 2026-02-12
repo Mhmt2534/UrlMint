@@ -50,8 +50,18 @@ namespace UrlMint.Controllers
                                   headers["sec-purpose"].ToString().ToLower().Contains("prefetch");
             try
             {
+
+                var clickData = new ClickEventDto
+                {
+                    ShortCode = code,
+                    IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    UserAgent = Request.Headers["User-Agent"].ToString(),
+                    Referer = Request.Headers["Referer"].ToString(),
+                    Timestamp = DateTime.UtcNow
+                };
+
                 // We are transferring the business logic to the service (Queue operation is inside the service)
-                var longUrl = await _service.RedirectToLongUrl(code, isPrefetch);
+                var longUrl = await _service.RedirectToLongUrl(code, isPrefetch,clickData);
 
                 if (string.IsNullOrEmpty(longUrl))
                 {

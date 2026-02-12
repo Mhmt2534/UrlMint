@@ -8,6 +8,7 @@ using UrlMint.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using UrlMint.Services.Common.Validation;
 using UrlMint.Services.Common.Exceptions;
+using System.Text.Json;
 
 namespace UrlMint.Services
 {
@@ -46,7 +47,8 @@ namespace UrlMint.Services
             return ToDto(entity);
         }
 
-        public async Task<string> RedirectToLongUrl(string code, bool isPrefetch)
+        #region redirect
+        public async Task<string> RedirectToLongUrl(string code, bool isPrefetch, ClickEventDto clickData)
         {
 
             string cacheKey = $"url:{code}";
@@ -84,6 +86,11 @@ namespace UrlMint.Services
             if (!isPrefetch)
             {
                 await _redisDb.StringIncrementAsync($"stats:click:{code}");
+                
+                var jsonLog = JsonSerializer.Serialize(clickData);
+
+                await _redisDb.ListRightPushAsync("click_queue", jsonLog);
+
             }
             else
             {
@@ -93,6 +100,7 @@ namespace UrlMint.Services
             return cachedUrl;
 
         }
+        #endregion
 
 
         public async Task<ShortUrlResponseDto> GetByLongUrlAsync(ShortUrlRequestDto requestDto)

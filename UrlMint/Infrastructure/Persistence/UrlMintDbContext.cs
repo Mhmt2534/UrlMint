@@ -8,6 +8,7 @@ namespace UrlMint.Infrastructure.Persistence
         public UrlMintDbContext(DbContextOptions<UrlMintDbContext> options) : base(options) { }
 
         public DbSet<ShortUrl> ShortUrls { get; set; }
+        public DbSet<ClickLog> ClickLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
