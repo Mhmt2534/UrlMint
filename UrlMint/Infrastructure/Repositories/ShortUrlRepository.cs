@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Threading.Tasks;
+using UrlMint.Domain.DTO;
 using UrlMint.Domain.Entities;
 using UrlMint.Domain.Interfaces;
 using UrlMint.Infrastructure.Persistence;
@@ -112,6 +113,37 @@ namespace UrlMint.Infrastructure.Repositories
             return await _context.ShortUrls.AnyAsync(
                 x => x.ShortCode == shortCode
                 );
+        }
+
+
+        public async Task<List<HourlyStatsDto>> GetLast24HoursStatsAsync(string shortCode)
+        {
+            // Bu SQL sorgusu şunu yapar:
+            // 1. Son 24 saatin listesini oluşturur (generate_series).
+            // 2. ClickLogs tablosuyla "LEFT JOIN" yapar.
+            // 3. Veri olmayan saatleri "0" olarak sayar.
+
+            FormattableString sql = $@"
+        WITH hours AS (
+            SELECT generate_series(
+                date_trunc('hour', NOW()) - INTERVAL '23 hours',
+                date_trunc('hour', NOW()),
+                '1 hour'::interval
+            ) as hour_start
+        )
+        SELECT 
+            to_char(h.hour_start, 'HH24:00') as ""Hour"",
+            COALESCE(COUNT(c.""Id""), 0) as ""Count""
+        FROM hours h
+        LEFT JOIN ""ClickLogs"" c 
+            ON date_trunc('hour', c.""ClickedAt"") = h.hour_start 
+            AND c.""ShortCode"" = {shortCode}
+        GROUP BY h.hour_start
+        ORDER BY h.hour_start ASC";
+
+            return await _context.Database
+                .SqlQuery<HourlyStatsDto>(sql)
+                .ToListAsync();
         }
     }
 }

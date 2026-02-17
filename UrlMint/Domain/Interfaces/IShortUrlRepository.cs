@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
+using UrlMint.Domain.DTO;
 using UrlMint.Domain.Entities;
 
 namespace UrlMint.Domain.Interfaces
@@ -18,6 +19,7 @@ namespace UrlMint.Domain.Interfaces
         Task CreatBatchAsync(IEnumerable<ShortUrl> shortUrls);
         public Task DeleteOldExpiredUrlsAsync();
         public Task<bool> ExistsAsync(string shortCode);
+        public Task<List<HourlyStatsDto>> GetLast24HoursStatsAsync(string shortCode);
 
     }
 }

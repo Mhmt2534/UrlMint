@@ -65,7 +65,7 @@ namespace UrlMint.Infrastructure.BackgroundTasks
                 else
                 {
                     // Kuyruk boşsa işlemciyi biraz dinlendir
-                    await Task.Delay(1000, stoppingToken);
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 }
             }
         }

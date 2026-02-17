@@ -77,6 +77,13 @@ namespace UrlMint.Controllers
             }
         }
 
+        [HttpGet("analytics/{code}/hourly")]
+        public async Task<IActionResult> GetHourlyStats(string code)
+        {
+            var stats = await _service.GetHourlyStatsAsync(code);
+            return Ok(stats);
+        }
+
         [HttpGet("info/{code}")]
         public async Task<IActionResult> GetUrlInfo(string code)
         {

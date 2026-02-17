@@ -254,6 +254,30 @@ namespace UrlMint.Services
             return ToDto(shortUrl);
         }
 
+        public async Task<List<HourlyStatsDto>> GetHourlyStatsAsync(string code)
+        {
+            string cacheKey = $"stats:hourly:{code}";
+
+            var cachedData = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                return JsonSerializer.Deserialize<List<HourlyStatsDto>>(cachedData);
+            }
+
+            var stats = await _repository.GetLast24HoursStatsAsync(code);
+
+            var options = new DistributedCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
+
+            await _cache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(stats),
+                options
+                );
+
+            return stats;
+        }
+
 
     }
 }
