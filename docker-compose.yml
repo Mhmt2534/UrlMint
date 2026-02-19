@@ -21,6 +21,9 @@ services:
       # PostgreSQL
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=urlmintdb;Username=postgres;Password=postgres;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200;
 
+      SafeBrowsing__ApiKey: your_google_safe_browsing_api_key_here
+      SafeBrowsing__BaseUrl: https://safebrowsing.googleapis.com/v4/threatMatches:find
+
       # Redis
       ConnectionStrings__Redis: redis:6379
     networks:
