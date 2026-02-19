@@ -13,5 +13,9 @@
   "HashidsSettings": {
     "Salt": "UrlMint_Cok_Gizli_Key_2026",
     "MinLength": 6
+  },
+  "SafeBrowsing": {
+    "ApiKey": "YourApiKey",
+    "BaseUrl": "https://safebrowsing.googleapis.com/v4/threatMatches:find"
   }
 }

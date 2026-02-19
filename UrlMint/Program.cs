@@ -3,6 +3,7 @@ using StackExchange.Redis;
 using UrlMint.Domain.Interfaces;
 using UrlMint.Infrastructure.BackgroundTasks;
 using UrlMint.Infrastructure.Encoding;
+using UrlMint.Infrastructure.ExternalServices;
 using UrlMint.Infrastructure.Persistence;
 using UrlMint.Infrastructure.Repositories;
 using UrlMint.Services;
@@ -34,6 +35,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 builder.Services.AddSingleton<IUrlEncoder, UrlEncoder>();
 builder.Services.AddScoped<IShortUrlRepository,ShortUrlRepository>();
 builder.Services.AddScoped<IShortUrlService,ShortUrlService>();
+
+builder.Services.AddHttpClient<IUrlSafetyService, UrlSafetyService>();
 
 builder.Services.AddHostedService<UrlStatsBackgroundService>();
 builder.Services.AddHostedService<ExpiredUrlCleanupService>();

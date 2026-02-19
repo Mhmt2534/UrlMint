@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UrlMint.Domain.DTO;
+using UrlMint.Services.Common.Exceptions;
 using UrlMint.Services.Interfaces;
 
 namespace UrlMint.Controllers
@@ -18,26 +19,33 @@ namespace UrlMint.Controllers
         [HttpPost("shorten")]
         public async Task<IActionResult> ShortenUrl([FromBody] ShortUrlRequestDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.LongUrl))
-                return BadRequest(new { error = "URL is required." });
-
-            if (!Uri.TryCreate(request.LongUrl, UriKind.Absolute, out _))
-                return BadRequest(new { error = "Invalid URL format." });
-
-            var existing = await _service.GetByLongUrlAsync(request);
-            if (existing!=null)
+            try
             {
-                var response = CreateResponse(existing);
-                return Ok(response);
+                if (string.IsNullOrWhiteSpace(request.LongUrl))
+                    return BadRequest(new { error = "URL is required." });
+
+                if (!Uri.TryCreate(request.LongUrl, UriKind.Absolute, out _))
+                    return BadRequest(new { error = "Invalid URL format." });
+
+                var existing = await _service.GetByLongUrlAsync(request);
+                if (existing != null)
+                {
+                    var response = CreateResponse(existing);
+                    return Ok(response);
+                }
+
+                var created = await _service.UrlShortener(request);
+
+                return CreatedAtAction(
+                    nameof(GetUrlInfo), //action
+                    new { code = created.ShortCode }, //route value { "code" : 123}
+                   CreateResponse(created)
+                );
             }
-
-            var created = await _service.UrlShortener(request);
-
-            return CreatedAtAction(
-                nameof(GetUrlInfo), //action
-                new { code = created.ShortCode }, //route value { "code" : 123}
-               CreateResponse(created)
-            );
+            catch (UnsafeUrlException ex)
+            {
+                return BadRequest(new { error = ex.Message, code = "UNSAFE_LINK" });
+            }
         }
 
         [HttpGet("/{code}")]

@@ -18,17 +18,17 @@ namespace UrlMint.Services
         private readonly IUrlEncoder _encoder;
         private readonly IDistributedCache _cache;
         private readonly IDatabase _redisDb; //Just redis
-        private readonly UrlMintDbContext _dbContext;
+        private readonly IUrlSafetyService _safetyService;
 
         public ShortUrlService(IShortUrlRepository repository, IUrlEncoder encoder
             , IDistributedCache cache, IConnectionMultiplexer redisMultiplexer
-            ,UrlMintDbContext dbContext)
+            , IUrlSafetyService safetyService)
         {
             _repository = repository;
             _encoder = encoder;
             _cache = cache;
             _redisDb = redisMultiplexer.GetDatabase();
-            _dbContext = dbContext;
+            _safetyService = safetyService;
         }
 
         public async Task<IEnumerable<ShortUrlResponseDto>> GetAllAsync()
@@ -113,6 +113,11 @@ namespace UrlMint.Services
 
         public async Task<ShortUrlResponseDto> UrlShortener(ShortUrlRequestDto requestDto)
         {
+            if (!await _safetyService.IsUrlSafeAsync(requestDto.LongUrl))
+            {
+                throw new UnsafeUrlException("This URL is not secure (Malware/Phishing detected)");
+            }
+
             var strategy = _repository.GetExecutionStrategy();
 
             return await strategy.ExecuteAsync(async () =>
