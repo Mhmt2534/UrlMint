@@ -24,3 +24,6 @@ nginx/certs/*.crt
 
 # ASP.NET Core local development settings
 appsettings.Development.json
+
+# Docker
+.env

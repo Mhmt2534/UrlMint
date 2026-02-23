@@ -19,16 +19,18 @@ namespace UrlMint.Services
         private readonly IDistributedCache _cache;
         private readonly IDatabase _redisDb; //Just redis
         private readonly IUrlSafetyService _safetyService;
+        private readonly ILogger<ShortUrlService> _logger;
 
         public ShortUrlService(IShortUrlRepository repository, IUrlEncoder encoder
             , IDistributedCache cache, IConnectionMultiplexer redisMultiplexer
-            , IUrlSafetyService safetyService)
+            , IUrlSafetyService safetyService, ILogger<ShortUrlService> logger)
         {
             _repository = repository;
             _encoder = encoder;
             _cache = cache;
             _redisDb = redisMultiplexer.GetDatabase();
             _safetyService = safetyService;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<ShortUrlResponseDto>> GetAllAsync()
@@ -256,6 +258,10 @@ namespace UrlMint.Services
                 throw new ConflictException("Alias already in use");
             }
 
+
+            _logger.LogInformation("Yeni link oluşturuldu. LongUrl: {LongUrl}, ShortCode: {ShortCode}",
+            requestDto.LongUrl,
+            shortUrl.ShortCode);
             return ToDto(shortUrl);
         }
 

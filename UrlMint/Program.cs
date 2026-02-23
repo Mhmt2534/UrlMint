@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using StackExchange.Redis;
 using UrlMint.Domain.Interfaces;
 using UrlMint.Infrastructure.BackgroundTasks;
@@ -10,6 +11,13 @@ using UrlMint.Services;
 using UrlMint.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+
+builder.Host.UseSerilog();
 
 //Database
 builder.Services.AddDbContext<UrlMintDbContext>(options =>

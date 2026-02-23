@@ -12,8 +12,8 @@ using UrlMint.Infrastructure.Persistence;
 namespace UrlMint.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(UrlMintDbContext))]
-    [Migration("20260203145412_MakeShortCodeNullable")]
-    partial class MakeShortCodeNullable
+    [Migration("20260221155138_InitialCreateDocker")]
+    partial class InitialCreateDocker
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,38 @@ namespace UrlMint.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("UrlMint.Domain.Entities.ClickLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("ClickedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Referer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShortCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ClickLogs");
+                });
 
             modelBuilder.Entity("UrlMint.Domain.Entities.ShortUrl", b =>
                 {
@@ -41,6 +73,11 @@ namespace UrlMint.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<DateTime?>("ExpiresAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW() + INTERVAL '30 days'");
+
                     b.Property<string>("LongUrl")
                         .IsRequired()
                         .HasColumnType("text");
@@ -50,6 +87,8 @@ namespace UrlMint.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(12)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
 
                     b.HasIndex("ShortCode")
                         .IsUnique();
