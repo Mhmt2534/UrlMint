@@ -16,16 +16,17 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
 
-      HashidsSettings__Salt: your_salt_here
+      HashidsSettings__Salt: ${HASHID_SALT}
       HashidsSettings__MinHashLength: 6
       # PostgreSQL
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=urlmintdb;Username=postgres;Password=postgres;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200;
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=urlmintdb;Username=postgres;Password=${DB_PASSWORD};Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200;
 
-      SafeBrowsing__ApiKey: your_google_safe_browsing_api_key_here
+      SafeBrowsing__ApiKey: ${SAFEBROWSING_API_KEY}
       SafeBrowsing__BaseUrl: https://safebrowsing.googleapis.com/v4/threatMatches:find
 
       # Redis
       ConnectionStrings__Redis: redis:6379
+      Serilog__WriteTo__1__Args__nodeUris: http://elasticsearch:9200
     networks:
       - urlmint-network
 
@@ -36,11 +37,25 @@ services:
     environment:
       POSTGRES_DB: urlmintdb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - urlmint-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
     networks:
       - urlmint-network
 
@@ -55,9 +70,40 @@ services:
     networks:
       - urlmint-network
 
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: urlmint-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false 
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" 
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - urlmint-network
+
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.1
+    container_name: urlmint-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - urlmint-network
+
+
 volumes:
   postgres_data:
   redis_data:
+  elasticsearch_data:
+  pgadmin-data:
 
 networks:
   urlmint-network:
