@@ -5,9 +5,9 @@ name: UrlMintBuilder CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "workflow-deneme" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "workflow-deneme" ]
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.x
+        dotnet-version: 1.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
