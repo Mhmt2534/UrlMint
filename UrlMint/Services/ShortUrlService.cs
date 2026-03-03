@@ -255,7 +255,7 @@ namespace UrlMint.Services
             }
             catch (DbUpdateException ex) when (DbExceptionHelper.IsUniqueViolation(ex))
             {
-                throw new ConflictException("Alias already in use");
+                        throw new ConflictException("Alias already in use");
             }
 
 
