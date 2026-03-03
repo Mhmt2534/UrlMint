@@ -63,6 +63,7 @@ jobs:
       if: github.ref == 'refs/heads/main'
       uses: docker/build-push-action@v5
       with:
-        context: UrlMint/Dockerfile
+        context: .
+        file: UrlMint/Dockerfile
         push: true
         tags: ghcr.io/${{ env.IMAGE_NAME }}/urlmint:latest
