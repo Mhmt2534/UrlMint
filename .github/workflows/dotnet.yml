@@ -49,7 +49,7 @@ jobs:
 
     - name: Set lowercase image name
       run: |
-        echo "IMAGE_NAME=$(echo 'ghcr.io/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
     - name: Log in to Github Container Registery
       if: github.ref == 'refs/heads/main'
@@ -66,4 +66,4 @@ jobs:
         context: .
         file: UrlMint/Dockerfile
         push: true
-        tags: ghcr.io/${{ env.IMAGE_NAME }}/urlmint:latest
+        tags: ghcr.io/${{ env.IMAGE_NAME }}:latest
