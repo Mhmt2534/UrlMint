@@ -3,7 +3,7 @@
     public class ClickLog
     {
         public long Id { get; set; }
-        public string ShortCode { get; set; } 
+        public string ShortCode { get; set; }
         public string? IpAddress { get; set; }
         public string? UserAgent { get; set; } // Browser/OS Info
         public string? Referer { get; set; } // Which website did it come from?

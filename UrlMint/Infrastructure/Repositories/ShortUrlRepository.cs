@@ -24,7 +24,7 @@ namespace UrlMint.Infrastructure.Repositories
 
         public IExecutionStrategy GetExecutionStrategy()
         {
-            return  _context.Database.CreateExecutionStrategy();
+            return _context.Database.CreateExecutionStrategy();
         }
 
 
@@ -65,7 +65,7 @@ namespace UrlMint.Infrastructure.Repositories
         {
             return await _context.ShortUrls
                 .AsNoTracking()
-                .OrderByDescending(x=>x.CreatedAt)
+                .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
         }
 

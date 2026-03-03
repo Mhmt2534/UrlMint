@@ -32,7 +32,7 @@ namespace UrlMint.Infrastructure.Persistence
                 .HasDefaultValueSql("NOW() + INTERVAL '30 days'");
 
                 entity
-                .Property(x=>x.LongUrl)
+                .Property(x => x.LongUrl)
                 .IsRequired();
 
                 entity

@@ -9,7 +9,7 @@
         public int ClickCount { get; set; }
         public DateTime? ExpiresAt { get; set; }
 
-        public bool IsExpired => 
+        public bool IsExpired =>
             ExpiresAt.HasValue && ExpiresAt.Value < DateTime.UtcNow;
     }
 }

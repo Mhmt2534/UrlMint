@@ -64,7 +64,7 @@ namespace UrlMint.Services
 
                 if (response == null ||
                     (response.ExpiresAt.HasValue && response.ExpiresAt.Value <= DateTime.UtcNow))
-                        return null;
+                    return null;
 
 
                 var ttl = response.ExpiresAt.HasValue
@@ -88,7 +88,7 @@ namespace UrlMint.Services
             if (!isPrefetch)
             {
                 await _redisDb.StringIncrementAsync($"stats:click:{code}");
-                
+
                 var jsonLog = JsonSerializer.Serialize(clickData);
 
                 await _redisDb.ListRightPushAsync("click_queue", jsonLog);

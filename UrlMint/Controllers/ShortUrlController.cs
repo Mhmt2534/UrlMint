@@ -52,10 +52,10 @@ namespace UrlMint.Controllers
         public async Task<IActionResult> RedirectToLongUrl(string code)
         {
             if (code == "favicon.ico") return NotFound();
-          
-                var headers = Request.Headers;
-                bool isPrefetch = headers.ContainsKey("sec-purpose") &&
-                                  headers["sec-purpose"].ToString().ToLower().Contains("prefetch");
+
+            var headers = Request.Headers;
+            bool isPrefetch = headers.ContainsKey("sec-purpose") &&
+                              headers["sec-purpose"].ToString().ToLower().Contains("prefetch");
             try
             {
 
@@ -69,11 +69,11 @@ namespace UrlMint.Controllers
                 };
 
                 // We are transferring the business logic to the service (Queue operation is inside the service)
-                var longUrl = await _service.RedirectToLongUrl(code, isPrefetch,clickData);
+                var longUrl = await _service.RedirectToLongUrl(code, isPrefetch, clickData);
 
                 if (string.IsNullOrEmpty(longUrl))
                 {
-                    return StatusCode(410,"Link expired or not found");
+                    return StatusCode(410, "Link expired or not found");
                 }
 
                 // 3. We only provide redirect.
@@ -134,17 +134,17 @@ namespace UrlMint.Controllers
             return Ok("10.000 records have been successfully added.");
         }
 
-        
+
         //Helper Methods
-        private object  CreateResponse(ShortUrlResponseDto dto)
+        private object CreateResponse(ShortUrlResponseDto dto)
         {
             return new
             {
                 shortUrl = $"{Request.Scheme}://{Request.Host}/{dto.ShortCode}",
                 shortCode = dto.ShortCode,
                 longUrl = dto.LongUrl,
-                createdAt = dto.CreatedAt ,
-                expriesAt = dto.ExpiresAt 
+                createdAt = dto.CreatedAt,
+                expriesAt = dto.ExpiresAt
             };
         }
 

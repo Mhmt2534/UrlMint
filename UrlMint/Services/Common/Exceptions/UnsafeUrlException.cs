@@ -2,6 +2,6 @@
 {
     public class UnsafeUrlException : Exception
     {
-        public UnsafeUrlException(string message) : base(message) {}
+        public UnsafeUrlException(string message) : base(message) { }
     }
 }

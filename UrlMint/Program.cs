@@ -41,8 +41,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 
 //DI Registration
 builder.Services.AddSingleton<IUrlEncoder, UrlEncoder>();
-builder.Services.AddScoped<IShortUrlRepository,ShortUrlRepository>();
-builder.Services.AddScoped<IShortUrlService,ShortUrlService>();
+builder.Services.AddScoped<IShortUrlRepository, ShortUrlRepository>();
+builder.Services.AddScoped<IShortUrlService, ShortUrlService>();
 
 builder.Services.AddHttpClient<IUrlSafetyService, UrlSafetyService>();
 
