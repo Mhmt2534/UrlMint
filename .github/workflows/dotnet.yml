@@ -1,28 +1,47 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
 
 name: UrlMintBuilder CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "workflow-deneme" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "workflow-deneme" ]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        dotnet-version: [ 5.0.x , 6.0.x , 7.0.x ]
+
     steps:
     - uses: actions/checkout@v4
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.x
-    - name: Restore dependencies
-      run: dotnet restore
+        dotnet-version: ${{matrix.dotnet-version}}
+
+    - name: Verify Code Format
+      run: dotnet format --verify-no-changes
+
+
+    - name: Cache Nuget Packages
+      uses: actions/cache@v3
+      with: 
+        path: ~/.nuget/packages
+        key: ${{runner.os}}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+            ${{runner.os}}-nuget-
+
+
+
+
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build
+
     - name: Test
       run: dotnet test --no-build --verbosity normal
