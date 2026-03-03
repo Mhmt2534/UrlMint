@@ -4,9 +4,9 @@ name: UrlMintBuilder CI
 
 on:
   push:
-    branches: [ "workflow-deneme" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "workflow-deneme" ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        dotnet-version: [ 5.0.x , 6.0.x , 7.0.x ]
+        dotnet-version: [ 9.0.x ]
 
     steps:
     - uses: actions/checkout@v4
