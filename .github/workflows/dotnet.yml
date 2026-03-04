@@ -59,9 +59,7 @@ jobs:
       run: docker compose up -d --build 
 
     - name: Run K6 Load Test
-      uses: grafana/k6-action@v0.3.1
-      with:
-        filename: k6-tests/load-test.js
+      run: docker compose run --rm k6
 
 
     - name: Set lowercase image name

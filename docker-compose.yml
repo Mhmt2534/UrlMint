@@ -98,6 +98,16 @@ services:
     networks:
       - urlmint-network
 
+  k6:
+    image: grafana/k6
+    volumes:
+      - ./k6-tests:/tests
+    working_dir: /tests
+    command: run load-test.js
+    depends_on:
+      - urlmint-api
+    networks:
+      - urlmint-network
 
 volumes:
   postgres_data:
