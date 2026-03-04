@@ -51,6 +51,30 @@ jobs:
       run: dotnet test --no-build --verbosity normal
 
 
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Start Postgres and Redis
+      run: |
+        docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_DB=urlmint_db postgres:15-alpine
+        docker run -d -p 6379:6379 redis:7-alpine
+        sleep 5 
+
+    - name: Run UrlMint App in Background
+      env:
+        ConnectionStrings__DefaultConnection: "Host=localhost;Database=urlmintdb;Username=postgres;Password=mysecretpassword;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200"
+        ConnectionStrings__Redis: "localhost:6379"
+      run: |
+        dotnet run --project UrlMint/UrlMint.csproj &
+        sleep 10 # Uygulamanın tam olarak başlaması için bekle
+
+    - name: Run K6 Load Test
+      uses: grafana/k6-action@v0.3.1
+      with:
+        filename: k6-tests/load-test.js
+
+
     - name: Set lowercase image name
       run: |
         echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
