@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using StackExchange.Redis;
+using System;
 using UrlMint.Domain.Interfaces;
 using UrlMint.Infrastructure.BackgroundTasks;
 using UrlMint.Infrastructure.Encoding;
@@ -72,5 +73,22 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<UrlMintDbContext>();
+
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Veritabani olusturulurken bir hata meydana geldi.");
+    }
+}
+
 
 app.Run();
