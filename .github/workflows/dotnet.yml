@@ -63,12 +63,11 @@ jobs:
 
     - name: Run UrlMint App in Background
       env:
-        ASPNETCORE_URLS: "http://localhost:8080"
         ConnectionStrings__DefaultConnection: "Host=localhost;Database=urlmintdb;Username=postgres;Password=mysecretpassword;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200"
         ConnectionStrings__Redis: "localhost:6379"
       run: |
-        dotnet run --project UrlMint/UrlMint.csproj &
-        sleep 10 # Uygulamanın tam olarak başlaması için bekle
+        dotnet run --project UrlMint/UrlMint.csproj --no-build --no-launch-profile --urls "http://localhost:8080" &
+        sleep 15 
 
     - name: Run K6 Load Test
       uses: grafana/k6-action@v0.3.1
