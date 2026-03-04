@@ -61,13 +61,8 @@ jobs:
         docker run -d -p 6379:6379 redis:7-alpine
         sleep 5 
 
-    - name: Run UrlMint App in Background
-      env:
-        ConnectionStrings__DefaultConnection: "Host=localhost;Database=urlmintdb;Username=postgres;Password=mysecretpassword;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200"
-        ConnectionStrings__Redis: "localhost:6379"
-      run: |
-        dotnet run --project UrlMint/UrlMint.csproj --no-build --no-launch-profile --urls "http://localhost:8080" &
-        sleep 15 
+    - name: Start stack
+      run: docker compose up -d --build 
 
     - name: Run K6 Load Test
       uses: grafana/k6-action@v0.3.1
