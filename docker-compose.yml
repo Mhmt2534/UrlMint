@@ -17,7 +17,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
 
       HashidsSettings__Salt: ${HASHID_SALT}
-      HashidsSettings__MinHashLength: ${HASHID_MIN_LENGTH}
+      HashidsSettings__MinLength: ${HASHID_MIN_LENGTH}
       # PostgreSQL
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=urlmintdb;Username=postgres;Password=${DB_PASSWORD};Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200;
 
