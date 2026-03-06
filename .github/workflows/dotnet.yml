@@ -13,6 +13,14 @@ jobs:
 
     runs-on: ubuntu-latest
 
+
+    env:
+      HASHID_SALT: ${{ secrets.HASHID_SALT }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      SAFEBROWSING_API_KEY: ${{ secrets.SAFEBROWSING_API_KEY }}
+      PGADMIN_DEFAULT_EMAIL: ${{ secrets.PGADMIN_DEFAULT_EMAIL }} 
+      PGADMIN_DEFAULT_PASSWORD: ${{ secrets.PGADMIN_DEFAULT_PASSWORD }}
+
     permissions:
       contents: read
       packages: write
@@ -50,13 +58,11 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
 
-
-
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-
     - name: Start stack
-      run: docker compose up -d --build 
+      run: |
+        docker compose up -d --build 
+        echo "Waiting for API to be ready..."
+        timeout 60s bash -c 'until curl -s http://localhost:8080/api/url/all; do sleep 5; done'
 
     - name: Run K6 Load Test
       run: docker compose run --rm k6
