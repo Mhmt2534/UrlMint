@@ -61,8 +61,14 @@ jobs:
     - name: Start stack
       run: |
         docker compose up -d --build 
-        echo "Waiting for API to be ready..."
-        timeout 60s bash -c 'until curl -s http://localhost:8080/api/url/all; do sleep 5; done'
+        echo "Waiting for API and Database to be fully ready..."
+        # Sadece endpointin varlığını değil, 200 dönmesini bekleyelim
+        attempt=0
+        until [ $attempt -ge 10 ] || [ $(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/url/all) -eq 200 ]; do
+          echo "Waiting... ($attempt)"
+          sleep 5
+          attempt=$((attempt+1))
+        done
 
     - name: Run K6 Load Test
       run: docker compose run --rm k6
