@@ -10,7 +10,7 @@ namespace UrlMint.Infrastructure.Encoding
         public UrlEncoder(IConfiguration configuration)
         {
             var salt = configuration["HashidsSettings:Salt"];
-            var minLegth = int.Parse(configuration["HashidsSettings:MinLength"]);
+            var minLegth = 6;
 
             _hashids = new Hashids(salt, minLegth);
         }
