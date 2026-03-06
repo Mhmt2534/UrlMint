@@ -71,8 +71,18 @@ jobs:
         done
 
     - name: Run K6 Load Test
+      env:
+        HASHID_SALT: ${{ secrets.HASHID_SALT }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        SAFEBROWSING_API_KEY: ${{ secrets.SAFEBROWSING_API_KEY }}
       run: docker compose run --rm k6
 
+
+    - name: Show API Logs on Failure
+      if: failure()
+      run: |
+        docker compose logs urlmint-api
+        docker compose logs postgres
 
     - name: Set lowercase image name
       run: |
