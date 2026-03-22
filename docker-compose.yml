@@ -19,7 +19,7 @@ services:
       HashidsSettings__Salt: ${HASHID_SALT}
       HashidsSettings__MinLength: ${HASHID_MIN_LENGTH}
       # PostgreSQL
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=urlmintdb;Username=postgres;Password=${DB_PASSWORD};Pooling=true;Minimum Pool Size=10;Maximum Pool Size=200;
+      ConnectionStrings__DefaultConnection: ${DB_CONNECTION}
 
       SafeBrowsing__ApiKey: ${SAFEBROWSING_API_KEY}
       SafeBrowsing__BaseUrl: https://safebrowsing.googleapis.com/v4/threatMatches:find
@@ -103,6 +103,8 @@ services:
     image: grafana/k6
     volumes:
       - ./k6-tests:/tests
+    environment:
+      - BASE_URL=${BASE_URL}
     working_dir: /tests
     command: run load-test.js
     depends_on:

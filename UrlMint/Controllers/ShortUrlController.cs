@@ -125,7 +125,7 @@ namespace UrlMint.Controllers
         public async Task<IActionResult> AddSeeds()
         {
             var testUrls = new List<string>();
-            for (int i = 0; i <= 10_00; i++)
+            for (int i = 0; i <= 1000; i++)
             {
                 testUrls.Add($"https://example.com/page-{i}");
             }
