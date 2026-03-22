@@ -16,7 +16,8 @@ jobs:
 
     env:
       HASHID_SALT: ${{ secrets.HASHID_SALT }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+      BASE_URL: ${{secrets.BASE_URL}}
       SAFEBROWSING_API_KEY: ${{ secrets.SAFEBROWSING_API_KEY }}
       PGADMIN_DEFAULT_EMAIL: ${{ secrets.PGADMIN_DEFAULT_EMAIL }} 
       PGADMIN_DEFAULT_PASSWORD: ${{ secrets.PGADMIN_DEFAULT_PASSWORD }}
